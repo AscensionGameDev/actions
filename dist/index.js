@@ -648,7 +648,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.cloneTopicPost = exports.updateTopicForVersion = exports.createTopicForVersion = exports.getTopic = exports.findTopicForVersion = void 0;
+exports.cloneTopicPost = exports.makeTopicPost = exports.updateTopicForVersion = exports.createTopicForVersion = exports.getTopic = exports.findTopicForVersion = void 0;
 const form_data_1 = __importDefault(__nccwpck_require__(2408));
 const common_1 = __nccwpck_require__(8175);
 const ipb_1 = __nccwpck_require__(8844);
@@ -703,11 +703,12 @@ function createTopicForVersion(version, initialBuild, initialHash, init = defaul
 exports.createTopicForVersion = createTopicForVersion;
 function updateTopicForVersion(version, build, hash, topicId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const post = yield cloneTopicPost(topicId);
+        const existingPost = yield cloneTopicPost(topicId);
         const queryUrl = new URL(`https://www.ascensiongamedev.com/api/forums/topics/${topicId}`);
         const formData = new form_data_1.default();
         const postBody = (0, posts_1.createPostBodyForVersion)(version, build, hash);
         formData.append('post', postBody);
+        const post = yield makeTopicPost(topicId, existingPost.author.id, postBody);
         const topic = yield (0, requests_1.requestJson)(queryUrl, {
             method: 'POST',
             body: formData
@@ -719,19 +720,26 @@ function updateTopicForVersion(version, build, hash, topicId) {
     });
 }
 exports.updateTopicForVersion = updateTopicForVersion;
-function cloneTopicPost(topicId) {
+function makeTopicPost(topicId, authorId, postBody, date) {
     return __awaiter(this, void 0, void 0, function* () {
-        const existingTopic = yield getTopic(topicId);
         const queryUrl = new URL('https://www.ascensiongamedev.com/api/forums/posts');
         const formData = new form_data_1.default();
-        formData.append('topic', existingTopic.id.toString());
-        formData.append('author', existingTopic.firstPost.author.id.toString());
-        formData.append('date', existingTopic.firstPost.date);
-        formData.append('post', existingTopic.firstPost.content);
+        formData.append('topic', topicId.toString());
+        formData.append('author', authorId.toString());
+        formData.append('date', date !== null && date !== void 0 ? date : new Date().toISOString());
+        formData.append('post', postBody);
         const post = yield (0, requests_1.requestJson)(queryUrl, {
             method: 'POST',
             body: formData
         });
+        return post;
+    });
+}
+exports.makeTopicPost = makeTopicPost;
+function cloneTopicPost(topicId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const existingTopic = yield getTopic(topicId);
+        const post = yield makeTopicPost(existingTopic.id, existingTopic.firstPost.author.id, existingTopic.firstPost.content, existingTopic.firstPost.date);
         return post;
     });
 }

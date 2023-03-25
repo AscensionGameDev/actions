@@ -84,7 +84,7 @@ export async function updateTopicForVersion(
 	hash: string,
 	topicId: number
 ): Promise<{topic: Topic; post: Post}> {
-	const post = await cloneTopicPost(topicId);
+	const existingPost = await cloneTopicPost(topicId);
 
 	const queryUrl = new URL(
 		`https://www.ascensiongamedev.com/api/forums/topics/${topicId}`
@@ -93,7 +93,10 @@ export async function updateTopicForVersion(
 	const formData = new FormData();
 
 	const postBody = createPostBodyForVersion(version, build, hash);
+
 	formData.append('post', postBody);
+
+	const post = await makeTopicPost(topicId, existingPost.author.id, postBody);
 
 	const topic = await requestJson<Topic>(queryUrl, {
 		method: 'POST',
@@ -106,20 +109,37 @@ export async function updateTopicForVersion(
 	};
 }
 
-export async function cloneTopicPost(topicId: number): Promise<Post> {
-	const existingTopic = await getTopic(topicId);
+export async function makeTopicPost(
+	topicId: number,
+	authorId: number,
+	postBody: string,
+	date?: string
+): Promise<Post> {
 	const queryUrl = new URL('https://www.ascensiongamedev.com/api/forums/posts');
 
 	const formData = new FormData();
-	formData.append('topic', existingTopic.id.toString());
-	formData.append('author', existingTopic.firstPost.author.id.toString());
-	formData.append('date', existingTopic.firstPost.date);
-	formData.append('post', existingTopic.firstPost.content);
+	formData.append('topic', topicId.toString());
+	formData.append('author', authorId.toString());
+	formData.append('date', date ?? new Date().toISOString());
+	formData.append('post', postBody);
 
 	const post = await requestJson<Post>(queryUrl, {
 		method: 'POST',
 		body: formData
 	});
+
+	return post;
+}
+
+export async function cloneTopicPost(topicId: number): Promise<Post> {
+	const existingTopic = await getTopic(topicId);
+
+	const post = await makeTopicPost(
+		existingTopic.id,
+		existingTopic.firstPost.author.id,
+		existingTopic.firstPost.content,
+		existingTopic.firstPost.date
+	);
 
 	return post;
 }
