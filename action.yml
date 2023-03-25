@@ -1,11 +1,19 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: '@intersect-engine/action-forum-poster'
+description: 'Action to publish Intersect Engine releases to the AscensionGameDev community forum'
+author: 'Ascension Game Dev'
 inputs:
-  milliseconds: # change this
+  api-key:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'IPB API Key'
+  build:
+    required: true
+    description: 'Build run number'
+  hash:
+    required: true
+    description: 'Commit hash'
+  version:
+    required: true
+    description: 'The version identifier'
 runs:
   using: 'node16'
   main: 'dist/index.js'
