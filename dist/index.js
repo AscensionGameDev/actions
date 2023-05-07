@@ -69,10 +69,19 @@ function run() {
             const apiKey = (0, core_1.getInput)('api-key');
             const version = (0, core_1.getInput)('version');
             const buildRaw = (0, core_1.getInput)('build');
-            const build = Number.parseInt(buildRaw);
             const hash = (0, core_1.getInput)('hash');
+            const topicIdRaw = (0, core_1.getInput)('topic-id');
+            const build = Number.parseInt(buildRaw);
+            const topicId = Number.parseInt(topicIdRaw);
             (0, requests_1.setApiKey)(apiKey);
-            let topic = yield (0, topics_1.findTopicForVersion)(version);
+            let topic = yield (0, topics_1.findTopicById)(topicId);
+            if (topic) {
+                (0, core_1.debug)(`Found topic with id '${topicId}', will skip looking for a topic matching version '${version}'.`);
+            }
+            else {
+                (0, core_1.debug)(`Did not find topic with id '${topicId}', looking for topic for version '${version}'...`);
+                topic = yield (0, topics_1.findTopicForVersion)(version);
+            }
             if (topic) {
                 const { post, topic: updatedTopic } = yield (0, topics_1.updateTopicForVersion)(version, build, hash, topic.id);
                 (0, core_1.debug)(`Updated ${topic.id}/${updatedTopic.id} and created new post ${post.id} to replace the original for v${(0, common_1.combineVersionBuildHash)(version, build, hash)}`);
@@ -648,12 +657,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.cloneTopicPost = exports.makeTopicPost = exports.updateTopicForVersion = exports.createTopicForVersion = exports.getTopic = exports.findTopicForVersion = void 0;
+exports.cloneTopicPost = exports.makeTopicPost = exports.updateTopicForVersion = exports.createTopicForVersion = exports.getTopic = exports.findTopicForVersion = exports.findTopicById = void 0;
 const form_data_1 = __importDefault(__nccwpck_require__(2408));
 const common_1 = __nccwpck_require__(8175);
 const ipb_1 = __nccwpck_require__(8844);
 const posts_1 = __nccwpck_require__(3852);
 const requests_1 = __nccwpck_require__(8972);
+function findTopicById(id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!id) {
+            return undefined;
+        }
+        const queryUrl = new URL(`https://www.ascensiongamedev.com/api/forums/topics/${id}`);
+        const response = yield (0, requests_1.requestJson)(queryUrl.href);
+        return response || undefined;
+    });
+}
+exports.findTopicById = findTopicById;
 function findTopicForVersion(version, forums = '312', authors = '5203') {
     return __awaiter(this, void 0, void 0, function* () {
         const queryUrl = new URL('https://www.ascensiongamedev.com/api/forums/topics');

@@ -1,9 +1,21 @@
 import FormData from 'form-data';
 
-import {createTopicTitleForVersion} from './common';
-import {Topic, PagedResponse, Visibility, Post} from './ipb';
-import {createPostBodyForVersion} from './posts';
-import {requestJson} from './requests';
+import { createTopicTitleForVersion } from './common';
+import { Topic, PagedResponse, Visibility, Post } from './ipb';
+import { createPostBodyForVersion } from './posts';
+import { requestJson } from './requests';
+
+export async function findTopicById(id: number): Promise<Topic | undefined> {
+	if (!id) {
+		return undefined;
+	}
+
+	const queryUrl = new URL(
+		`https://www.ascensiongamedev.com/api/forums/topics/${id}`
+	);
+	const response = await requestJson<Topic>(queryUrl.href);
+	return response || undefined;
+}
 
 export async function findTopicForVersion(
 	version: string,
@@ -17,7 +29,7 @@ export async function findTopicForVersion(
 	queryUrl.searchParams.set('authors', authors);
 	queryUrl.searchParams.set('perPage', '1000');
 	const response = await requestJson<PagedResponse<Topic>>(queryUrl.href);
-	const topicForVersion = response.results.find(({title}) =>
+	const topicForVersion = response.results.find(({ title }) =>
 		new RegExp(`^v${version} Nightly Builds$`).test(title)
 	);
 	return topicForVersion;
@@ -53,7 +65,7 @@ export async function createTopicForVersion(
 		'https://www.ascensiongamedev.com/api/forums/topics'
 	);
 
-	const {authorId, forumId, hidden} = {
+	const { authorId, forumId, hidden } = {
 		...defaultCreateTopicForVersionInit,
 		...(init ?? {})
 	};
@@ -83,7 +95,7 @@ export async function updateTopicForVersion(
 	build: number,
 	hash: string,
 	topicId: number
-): Promise<{topic: Topic; post: Post}> {
+): Promise<{ topic: Topic; post: Post }> {
 	const existingPost = await cloneTopicPost(topicId);
 
 	const queryUrl = new URL(
