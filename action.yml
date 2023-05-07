@@ -11,6 +11,9 @@ inputs:
   hash:
     required: true
     description: 'Commit hash'
+  topic-id:
+    required: false
+    description: 'Optional topic ID to override version-search (used for debugging)'
   version:
     required: true
     description: 'The version identifier'
