@@ -1,19 +1,121 @@
-import type {Document, Element} from 'parse5/dist/tree-adapters/default';
+import type { ChildNode, Document, Element } from 'parse5/dist/tree-adapters/default';
 
 import FormData from 'form-data';
-import {serialize} from 'parse5';
+import { serialize } from 'parse5';
 
-import {combineVersionBuild, combineVersionBuildHash} from './common';
-import {Visibility, Post} from './ipb';
-import {requestJson} from './requests';
+import { combineVersionBuild, combineVersionBuildHash } from './common';
+import { Visibility, Post } from './ipb';
+import { requestJson } from './requests';
+
+type BuildMetadata = {
+	description: string;
+	name: string;
+};
+
+const builds: BuildMetadata[] = [
+	{
+		description: 'Full (includes the new engine binaries, and all stock assets)',
+		name: 'full'
+	},
+	{
+		description: 'Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)',
+		name: 'upgrade'
+	},
+	{
+		description: 'Patch (only includes the new engine binaries)',
+		name: 'patch'
+	},
+];
+
+const systemPrettyNames: Record<string, string> = {
+	android: 'Android',
+	browser: 'Browser',
+	ios: 'iOS',
+	linux: 'Linux',
+	osx: 'MacOS',
+	win: 'Windows',
+};
+
+function getRuntimePrettyName(runtimeIdentifier: string): string {
+	const [systemIdentifier, architecture] = runtimeIdentifier.split('-');
+	const nameParts = [
+		(systemPrettyNames[systemIdentifier] ?? systemIdentifier),
+		architecture ? `(${architecture})` : ''
+	];
+	return nameParts.filter(Boolean).join(' ');
+}
 
 export function createPostBodyForVersion(
 	version: string,
 	build: number,
-	hash: string
+	hash: string,
+	runtimeIdentifiers: string[]
 ): string {
 	const versionBuild = combineVersionBuild(version, build);
 	const versionBuildHash = combineVersionBuildHash(version, build, hash);
+
+	function createLinkForRuntime(runtimeIdentifier: string, buildMetadata: BuildMetadata): ChildNode[] {
+		const buildSegment = [runtimeIdentifier, buildMetadata.name].filter(Boolean).join('-');
+		const runtimePrettyName = getRuntimePrettyName(runtimeIdentifier);
+		return [
+			{
+				nodeName: 'li',
+				tagName: 'li',
+				attrs: [],
+				namespaceURI:
+					'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
+				childNodes: [
+					{
+						nodeName: '#text',
+						value: '\n\t\t',
+						parentNode: null
+					},
+					{
+						nodeName: 'a',
+						tagName: 'a',
+						attrs: [
+							{
+								name: 'href',
+								value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${buildSegment}-${versionBuildHash}.zip`
+							},
+							{
+								name: 'rel',
+								value: 'external nofollow'
+							}
+						],
+						namespaceURI:
+							'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
+						childNodes: [
+							{
+								nodeName: '#text',
+								value: `${runtimePrettyName} - ${buildMetadata.description}`,
+								parentNode: null
+							}
+						],
+						parentNode: null
+					},
+					{
+						nodeName: '#text',
+						value: '\n\t',
+						parentNode: null
+					}
+				],
+				parentNode: null
+			},
+			{
+				nodeName: '#text',
+				value: '\n\t',
+				parentNode: null
+			},
+		];
+	}
+
+	if (runtimeIdentifiers.length === 0) {
+		runtimeIdentifiers = [''];
+	}
+
+	const runtimeLinks = runtimeIdentifiers.flatMap(runtimeIdentifier => builds.flatMap(buildMetadata => createLinkForRuntime(runtimeIdentifier, buildMetadata)));
+
 	const post: Document = {
 		nodeName: '#document',
 		mode: 'quirks' as Document['mode'],
@@ -183,155 +285,7 @@ export function createPostBodyForVersion(
 						value: '\n\t',
 						parentNode: null
 					},
-					{
-						nodeName: 'li',
-						tagName: 'li',
-						attrs: [],
-						namespaceURI:
-							'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
-						childNodes: [
-							{
-								nodeName: '#text',
-								value: '\n\t\t',
-								parentNode: null
-							},
-							{
-								nodeName: 'a',
-								tagName: 'a',
-								attrs: [
-									{
-										name: 'href',
-										value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${versionBuildHash}.full.zip`
-									},
-									{
-										name: 'rel',
-										value: 'external nofollow'
-									}
-								],
-								namespaceURI:
-									'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
-								childNodes: [
-									{
-										nodeName: '#text',
-										value:
-											'Full (includes the new engine binaries, and all stock assets)',
-										parentNode: null
-									}
-								],
-								parentNode: null
-							},
-							{
-								nodeName: '#text',
-								value: '\n\t',
-								parentNode: null
-							}
-						],
-						parentNode: null
-					},
-					{
-						nodeName: '#text',
-						value: '\n\t',
-						parentNode: null
-					},
-					{
-						nodeName: 'li',
-						tagName: 'li',
-						attrs: [],
-						namespaceURI:
-							'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
-						childNodes: [
-							{
-								nodeName: '#text',
-								value: '\n\t\t',
-								parentNode: null
-							},
-							{
-								nodeName: 'a',
-								tagName: 'a',
-								attrs: [
-									{
-										name: 'href',
-										value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${versionBuildHash}.upgrade.zip`
-									},
-									{
-										name: 'rel',
-										value: 'external nofollow'
-									}
-								],
-								namespaceURI:
-									'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
-								childNodes: [
-									{
-										nodeName: '#text',
-										value:
-											'Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)',
-										parentNode: null
-									}
-								],
-								parentNode: null
-							},
-							{
-								nodeName: '#text',
-								value: '\n\t',
-								parentNode: null
-							}
-						],
-						parentNode: null
-					},
-					{
-						nodeName: '#text',
-						value: '\n\t',
-						parentNode: null
-					},
-					{
-						nodeName: 'li',
-						tagName: 'li',
-						attrs: [],
-						namespaceURI:
-							'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
-						childNodes: [
-							{
-								nodeName: '#text',
-								value: '\n\t\t',
-								parentNode: null
-							},
-							{
-								nodeName: 'a',
-								tagName: 'a',
-								attrs: [
-									{
-										name: 'href',
-										value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${versionBuildHash}.patch.zip`
-									},
-									{
-										name: 'rel',
-										value: 'external nofollow'
-									}
-								],
-								namespaceURI:
-									'http://www.w3.org/1999/xhtml' as Element['namespaceURI'],
-								childNodes: [
-									{
-										nodeName: '#text',
-										value: 'Patch (only includes the new engine binaries)',
-										parentNode: null
-									}
-								],
-								parentNode: null
-							},
-							{
-								nodeName: '#text',
-								value: '\n\t',
-								parentNode: null
-							}
-						],
-						parentNode: null
-					},
-					{
-						nodeName: '#text',
-						value: '\n\t',
-						parentNode: null
-					},
+					...runtimeLinks,
 					{
 						nodeName: 'li',
 						tagName: 'li',
@@ -449,6 +403,7 @@ export async function postNewBuildForVersion(
 	version: string,
 	build: number,
 	hash: string,
+	runtimeIdentifiers: string[],
 	topicId: number,
 	author = 5203,
 	hidden = Visibility.HiddenByModerator
@@ -460,7 +415,7 @@ export async function postNewBuildForVersion(
 	formData.append('author', author.toString());
 	formData.append('hidden', String(hidden));
 
-	const postBody = createPostBodyForVersion(version, build, hash);
+	const postBody = createPostBodyForVersion(version, build, hash, runtimeIdentifiers);
 	formData.append('post', postBody);
 
 	const post = await requestJson<Post>(queryUrl, {

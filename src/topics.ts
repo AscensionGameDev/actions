@@ -59,6 +59,7 @@ export async function createTopicForVersion(
 	version: string,
 	initialBuild: number,
 	initialHash: string,
+	runtimeIdentifiers: string[],
 	init: Partial<CreateTopicForVersionInit> = defaultCreateTopicForVersionInit
 ): Promise<Topic> {
 	const queryUrl = new URL(
@@ -79,7 +80,7 @@ export async function createTopicForVersion(
 	formData.append('featured', '1');
 	formData.append('pinned', '1');
 
-	const postBody = createPostBodyForVersion(version, initialBuild, initialHash);
+	const postBody = createPostBodyForVersion(version, initialBuild, initialHash, runtimeIdentifiers);
 	formData.append('post', postBody);
 
 	const topic = await requestJson<Topic>(queryUrl, {
@@ -94,7 +95,8 @@ export async function updateTopicForVersion(
 	version: string,
 	build: number,
 	hash: string,
-	topicId: number
+	topicId: number,
+	runtimeIdentifiers: string[]
 ): Promise<{ topic: Topic; post: Post }> {
 	const existingPost = await cloneTopicPost(topicId);
 
@@ -104,7 +106,7 @@ export async function updateTopicForVersion(
 
 	const formData = new FormData();
 
-	const postBody = createPostBodyForVersion(version, build, hash);
+	const postBody = createPostBodyForVersion(version, build, hash, runtimeIdentifiers);
 
 	formData.append('post', postBody);
 

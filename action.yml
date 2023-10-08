@@ -11,6 +11,9 @@ inputs:
   hash:
     required: true
     description: 'Commit hash'
+  runtime-identifiers:
+    required: true
+    description: 'The runtime identifiers (comma-separated)'
   topic-id:
     required: false
     description: 'Optional topic ID to override version-search (used for debugging)'

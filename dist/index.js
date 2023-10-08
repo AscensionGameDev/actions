@@ -64,15 +64,19 @@ const ipb_1 = __nccwpck_require__(8844);
 const requests_1 = __nccwpck_require__(8972);
 const common_1 = __nccwpck_require__(8175);
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const apiKey = (0, core_1.getInput)('api-key');
             const version = (0, core_1.getInput)('version');
             const buildRaw = (0, core_1.getInput)('build');
             const hash = (0, core_1.getInput)('hash');
+            const runtimeIdentifiersRaw = (0, core_1.getInput)('runtime-identifiers');
             const topicIdRaw = (0, core_1.getInput)('topic-id');
             const build = Number.parseInt(buildRaw);
             const topicId = Number.parseInt(topicIdRaw);
+            const runtimeIdentifiers = (_a = runtimeIdentifiersRaw === null || runtimeIdentifiersRaw === void 0 ? void 0 : runtimeIdentifiersRaw.split(',')) !== null && _a !== void 0 ? _a : [''];
+            (0, core_1.debug)(`Posting builds for the following runtime identifiers: ${runtimeIdentifiers.join(',') || 'None specified'}`);
             (0, requests_1.setApiKey)(apiKey);
             let topic = yield (0, topics_1.findTopicById)(topicId);
             if (topic) {
@@ -83,11 +87,11 @@ function run() {
                 topic = yield (0, topics_1.findTopicForVersion)(version);
             }
             if (topic) {
-                const { post, topic: updatedTopic } = yield (0, topics_1.updateTopicForVersion)(version, build, hash, topic.id);
+                const { post, topic: updatedTopic } = yield (0, topics_1.updateTopicForVersion)(version, build, hash, topic.id, runtimeIdentifiers);
                 (0, core_1.debug)(`Updated ${topic.id}/${updatedTopic.id} and created new post ${post.id} to replace the original for v${(0, common_1.combineVersionBuildHash)(version, build, hash)}`);
             }
             else {
-                topic = yield (0, topics_1.createTopicForVersion)(version, build, hash, {
+                topic = yield (0, topics_1.createTopicForVersion)(version, build, hash, runtimeIdentifiers, {
                     hidden: ipb_1.Visibility.Visible
                 });
                 (0, core_1.debug)(`Created new post ${topic.id} for v${(0, common_1.combineVersionBuildHash)(version, build, hash)}`);
@@ -127,9 +131,97 @@ const parse5_1 = __nccwpck_require__(601);
 const common_1 = __nccwpck_require__(8175);
 const ipb_1 = __nccwpck_require__(8844);
 const requests_1 = __nccwpck_require__(8972);
-function createPostBodyForVersion(version, build, hash) {
+const builds = [
+    {
+        description: 'Full (includes the new engine binaries, and all stock assets)',
+        name: 'full'
+    },
+    {
+        description: 'Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)',
+        name: 'upgrade'
+    },
+    {
+        description: 'Patch (only includes the new engine binaries)',
+        name: 'patch'
+    },
+];
+const systemPrettyNames = {
+    android: 'Android',
+    browser: 'Browser',
+    ios: 'iOS',
+    linux: 'Linux',
+    osx: 'MacOS',
+    win: 'Windows',
+};
+function getRuntimePrettyName(runtimeIdentifier) {
+    var _a;
+    const [systemIdentifier, architecture] = runtimeIdentifier.split('-');
+    const nameParts = [
+        ((_a = systemPrettyNames[systemIdentifier]) !== null && _a !== void 0 ? _a : systemIdentifier),
+        architecture ? `(${architecture})` : ''
+    ];
+    return nameParts.filter(Boolean).join(' ');
+}
+function createPostBodyForVersion(version, build, hash, runtimeIdentifiers) {
     const versionBuild = (0, common_1.combineVersionBuild)(version, build);
     const versionBuildHash = (0, common_1.combineVersionBuildHash)(version, build, hash);
+    function createLinkForRuntime(runtimeIdentifier, buildMetadata) {
+        const buildSegment = [runtimeIdentifier, buildMetadata.name].filter(Boolean).join('-');
+        const runtimePrettyName = getRuntimePrettyName(runtimeIdentifier);
+        return [
+            {
+                nodeName: 'li',
+                tagName: 'li',
+                attrs: [],
+                namespaceURI: 'http://www.w3.org/1999/xhtml',
+                childNodes: [
+                    {
+                        nodeName: '#text',
+                        value: '\n\t\t',
+                        parentNode: null
+                    },
+                    {
+                        nodeName: 'a',
+                        tagName: 'a',
+                        attrs: [
+                            {
+                                name: 'href',
+                                value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${buildSegment}-${versionBuildHash}.zip`
+                            },
+                            {
+                                name: 'rel',
+                                value: 'external nofollow'
+                            }
+                        ],
+                        namespaceURI: 'http://www.w3.org/1999/xhtml',
+                        childNodes: [
+                            {
+                                nodeName: '#text',
+                                value: `${runtimePrettyName} - ${buildMetadata.description}`,
+                                parentNode: null
+                            }
+                        ],
+                        parentNode: null
+                    },
+                    {
+                        nodeName: '#text',
+                        value: '\n\t',
+                        parentNode: null
+                    }
+                ],
+                parentNode: null
+            },
+            {
+                nodeName: '#text',
+                value: '\n\t',
+                parentNode: null
+            },
+        ];
+    }
+    if (runtimeIdentifiers.length === 0) {
+        runtimeIdentifiers = [''];
+    }
+    const runtimeLinks = runtimeIdentifiers.flatMap(runtimeIdentifier => builds.flatMap(buildMetadata => createLinkForRuntime(runtimeIdentifier, buildMetadata)));
     const post = {
         nodeName: '#document',
         mode: 'quirks',
@@ -293,147 +385,7 @@ function createPostBodyForVersion(version, build, hash) {
                         value: '\n\t',
                         parentNode: null
                     },
-                    {
-                        nodeName: 'li',
-                        tagName: 'li',
-                        attrs: [],
-                        namespaceURI: 'http://www.w3.org/1999/xhtml',
-                        childNodes: [
-                            {
-                                nodeName: '#text',
-                                value: '\n\t\t',
-                                parentNode: null
-                            },
-                            {
-                                nodeName: 'a',
-                                tagName: 'a',
-                                attrs: [
-                                    {
-                                        name: 'href',
-                                        value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${versionBuildHash}.full.zip`
-                                    },
-                                    {
-                                        name: 'rel',
-                                        value: 'external nofollow'
-                                    }
-                                ],
-                                namespaceURI: 'http://www.w3.org/1999/xhtml',
-                                childNodes: [
-                                    {
-                                        nodeName: '#text',
-                                        value: 'Full (includes the new engine binaries, and all stock assets)',
-                                        parentNode: null
-                                    }
-                                ],
-                                parentNode: null
-                            },
-                            {
-                                nodeName: '#text',
-                                value: '\n\t',
-                                parentNode: null
-                            }
-                        ],
-                        parentNode: null
-                    },
-                    {
-                        nodeName: '#text',
-                        value: '\n\t',
-                        parentNode: null
-                    },
-                    {
-                        nodeName: 'li',
-                        tagName: 'li',
-                        attrs: [],
-                        namespaceURI: 'http://www.w3.org/1999/xhtml',
-                        childNodes: [
-                            {
-                                nodeName: '#text',
-                                value: '\n\t\t',
-                                parentNode: null
-                            },
-                            {
-                                nodeName: 'a',
-                                tagName: 'a',
-                                attrs: [
-                                    {
-                                        name: 'href',
-                                        value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${versionBuildHash}.upgrade.zip`
-                                    },
-                                    {
-                                        name: 'rel',
-                                        value: 'external nofollow'
-                                    }
-                                ],
-                                namespaceURI: 'http://www.w3.org/1999/xhtml',
-                                childNodes: [
-                                    {
-                                        nodeName: '#text',
-                                        value: 'Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)',
-                                        parentNode: null
-                                    }
-                                ],
-                                parentNode: null
-                            },
-                            {
-                                nodeName: '#text',
-                                value: '\n\t',
-                                parentNode: null
-                            }
-                        ],
-                        parentNode: null
-                    },
-                    {
-                        nodeName: '#text',
-                        value: '\n\t',
-                        parentNode: null
-                    },
-                    {
-                        nodeName: 'li',
-                        tagName: 'li',
-                        attrs: [],
-                        namespaceURI: 'http://www.w3.org/1999/xhtml',
-                        childNodes: [
-                            {
-                                nodeName: '#text',
-                                value: '\n\t\t',
-                                parentNode: null
-                            },
-                            {
-                                nodeName: 'a',
-                                tagName: 'a',
-                                attrs: [
-                                    {
-                                        name: 'href',
-                                        value: `https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v${versionBuild}/intersect-${versionBuildHash}.patch.zip`
-                                    },
-                                    {
-                                        name: 'rel',
-                                        value: 'external nofollow'
-                                    }
-                                ],
-                                namespaceURI: 'http://www.w3.org/1999/xhtml',
-                                childNodes: [
-                                    {
-                                        nodeName: '#text',
-                                        value: 'Patch (only includes the new engine binaries)',
-                                        parentNode: null
-                                    }
-                                ],
-                                parentNode: null
-                            },
-                            {
-                                nodeName: '#text',
-                                value: '\n\t',
-                                parentNode: null
-                            }
-                        ],
-                        parentNode: null
-                    },
-                    {
-                        nodeName: '#text',
-                        value: '\n\t',
-                        parentNode: null
-                    },
+                    ...runtimeLinks,
                     {
                         nodeName: 'li',
                         tagName: 'li',
@@ -542,14 +494,14 @@ function createPostBodyForVersion(version, build, hash) {
     return postBody;
 }
 exports.createPostBodyForVersion = createPostBodyForVersion;
-function postNewBuildForVersion(version, build, hash, topicId, author = 5203, hidden = ipb_1.Visibility.HiddenByModerator) {
+function postNewBuildForVersion(version, build, hash, runtimeIdentifiers, topicId, author = 5203, hidden = ipb_1.Visibility.HiddenByModerator) {
     return __awaiter(this, void 0, void 0, function* () {
         const queryUrl = new URL('https://www.ascensiongamedev.com/api/forums/posts');
         const formData = new form_data_1.default();
         formData.append('topic', topicId.toString());
         formData.append('author', author.toString());
         formData.append('hidden', String(hidden));
-        const postBody = createPostBodyForVersion(version, build, hash);
+        const postBody = createPostBodyForVersion(version, build, hash, runtimeIdentifiers);
         formData.append('post', postBody);
         const post = yield (0, requests_1.requestJson)(queryUrl, {
             method: 'POST',
@@ -699,7 +651,7 @@ const defaultCreateTopicForVersionInit = {
     forumId: 312,
     hidden: ipb_1.Visibility.HiddenByModerator
 };
-function createTopicForVersion(version, initialBuild, initialHash, init = defaultCreateTopicForVersionInit) {
+function createTopicForVersion(version, initialBuild, initialHash, runtimeIdentifiers, init = defaultCreateTopicForVersionInit) {
     return __awaiter(this, void 0, void 0, function* () {
         const queryUrl = new URL('https://www.ascensiongamedev.com/api/forums/topics');
         const { authorId, forumId, hidden } = Object.assign(Object.assign({}, defaultCreateTopicForVersionInit), (init !== null && init !== void 0 ? init : {}));
@@ -711,7 +663,7 @@ function createTopicForVersion(version, initialBuild, initialHash, init = defaul
         formData.append('prefix', 'Intersect');
         formData.append('featured', '1');
         formData.append('pinned', '1');
-        const postBody = (0, posts_1.createPostBodyForVersion)(version, initialBuild, initialHash);
+        const postBody = (0, posts_1.createPostBodyForVersion)(version, initialBuild, initialHash, runtimeIdentifiers);
         formData.append('post', postBody);
         const topic = yield (0, requests_1.requestJson)(queryUrl, {
             method: 'POST',
@@ -721,12 +673,12 @@ function createTopicForVersion(version, initialBuild, initialHash, init = defaul
     });
 }
 exports.createTopicForVersion = createTopicForVersion;
-function updateTopicForVersion(version, build, hash, topicId) {
+function updateTopicForVersion(version, build, hash, topicId, runtimeIdentifiers) {
     return __awaiter(this, void 0, void 0, function* () {
         const existingPost = yield cloneTopicPost(topicId);
         const queryUrl = new URL(`https://www.ascensiongamedev.com/api/forums/topics/${topicId}`);
         const formData = new form_data_1.default();
-        const postBody = (0, posts_1.createPostBodyForVersion)(version, build, hash);
+        const postBody = (0, posts_1.createPostBodyForVersion)(version, build, hash, runtimeIdentifiers);
         formData.append('post', postBody);
         const post = yield makeTopicPost(topicId, existingPost.author.id, postBody);
         const topic = yield (0, requests_1.requestJson)(queryUrl, {

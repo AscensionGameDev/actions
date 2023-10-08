@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`posts createPostBodyForVersion multiple runtime identifiers 1`] = `
+"<p>
+	<span style="font-size:1.5rem;"><strong>v0.8.0-beta.104 (<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/tag/v0.8.0-beta.104" rel="external nofollow">Release Notes</a>)</strong></span><br>
+	&nbsp;
+</p>
+
+<p>
+	<span style="font-size:1rem;"><strong>Downloads</strong></span>
+</p>
+
+<ul>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-linux-x64-full-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Linux (x64) - Full (includes the new engine binaries, and all stock assets)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-linux-x64-upgrade-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Linux (x64) - Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-linux-x64-patch-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Linux (x64) - Patch (only includes the new engine binaries)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-osx-x64-full-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">MacOS (x64) - Full (includes the new engine binaries, and all stock assets)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-osx-x64-upgrade-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">MacOS (x64) - Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-osx-x64-patch-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">MacOS (x64) - Patch (only includes the new engine binaries)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-win-x64-full-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Windows (x64) - Full (includes the new engine binaries, and all stock assets)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-win-x64-upgrade-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Windows (x64) - Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-win-x64-patch-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Windows (x64) - Patch (only includes the new engine binaries)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/archive/refs/tags/v0.8.0-beta.104.zip" rel="external nofollow">Source (.zip)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/archive/refs/tags/v0.8.0-beta.104.tar.gz" rel="external nofollow">Source (.tar.gz)</a>
+	</li>
+</ul>
+"
+`;
+
+exports[`posts createPostBodyForVersion no runtime identifiers 1`] = `
+"<p>
+	<span style="font-size:1.5rem;"><strong>v0.8.0-beta.104 (<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/tag/v0.8.0-beta.104" rel="external nofollow">Release Notes</a>)</strong></span><br>
+	&nbsp;
+</p>
+
+<p>
+	<span style="font-size:1rem;"><strong>Downloads</strong></span>
+</p>
+
+<ul>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-full-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow"> - Full (includes the new engine binaries, and all stock assets)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-upgrade-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow"> - Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-patch-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow"> - Patch (only includes the new engine binaries)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/archive/refs/tags/v0.8.0-beta.104.zip" rel="external nofollow">Source (.zip)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/archive/refs/tags/v0.8.0-beta.104.tar.gz" rel="external nofollow">Source (.tar.gz)</a>
+	</li>
+</ul>
+"
+`;
+
+exports[`posts createPostBodyForVersion one runtime identifier 1`] = `
+"<p>
+	<span style="font-size:1.5rem;"><strong>v0.8.0-beta.104 (<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/tag/v0.8.0-beta.104" rel="external nofollow">Release Notes</a>)</strong></span><br>
+	&nbsp;
+</p>
+
+<p>
+	<span style="font-size:1rem;"><strong>Downloads</strong></span>
+</p>
+
+<ul>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-linux-x64-full-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Linux (x64) - Full (includes the new engine binaries, and all stock assets)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-linux-x64-upgrade-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Linux (x64) - Upgrade (includes the new engine binaries, and the stock assets that have changed since the first nightly of the previous version)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/releases/download/v0.8.0-beta.104/intersect-linux-x64-patch-0.8.0-beta.104+build.ea049535df3586e8498f663399c8af597a0a6af7.zip" rel="external nofollow">Linux (x64) - Patch (only includes the new engine binaries)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/archive/refs/tags/v0.8.0-beta.104.zip" rel="external nofollow">Source (.zip)</a>
+	</li>
+	<li>
+		<a href="https://github.com/AscensionGameDev/Intersect-Engine/archive/refs/tags/v0.8.0-beta.104.tar.gz" rel="external nofollow">Source (.tar.gz)</a>
+	</li>
+</ul>
+"
+`;

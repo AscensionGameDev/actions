@@ -1,27 +1,30 @@
 import dotenv from 'dotenv';
-import {open} from 'fs/promises';
-import {join} from 'path';
+import { open } from 'fs/promises';
+import { join } from 'path';
 
-import {request, setApiKey} from '../requests';
+import { request, setApiKey } from '../requests';
 
-import {createTopicTitleForVersion} from '../common';
-import {Member, Post, Topic} from '../ipb';
-import {postNewBuildForVersion} from '../posts';
+import { createTopicTitleForVersion } from '../common';
+import { Member, Post, Topic } from '../ipb';
+import { postNewBuildForVersion } from '../posts';
 import {
 	createTopicForVersion,
 	findTopicForVersion,
 	updateTopicForVersion
 } from '../topics';
 
+let runAgainstServer = false;
+
 beforeAll(async () => {
 	const fh = await open(join(__dirname, '..', '..', '.env'));
 	const dotenvRaw = await fh.readFile('utf8');
 	const env = dotenv.parse(dotenvRaw);
 	const apiKey = env['INTERSECTBOT_FORUM_POST_API_KEY'];
+	runAgainstServer = !!apiKey;
 	setApiKey(apiKey);
 });
 
-describe('topic', () => {
+(runAgainstServer ? describe : describe.skip)('topic', () => {
 	const testRealTopicId = 6746;
 	const testRealVersion = '0.7.2-beta';
 	// const testRealBuild = 2;
@@ -48,7 +51,7 @@ describe('topic', () => {
 			)}.${Math.floor(Math.random() * 10)}`;
 			const buildNumber = 999 + Math.floor(Math.random() * 10000);
 			const hash = `${Math.floor(Math.random() * 10000)}fakehash`;
-			const topicPromise = createTopicForVersion(version, buildNumber, hash);
+			const topicPromise = createTopicForVersion(version, buildNumber, hash, ['linux-x64']);
 			await expect(topicPromise).resolves.toMatchObject({
 				id: expect.any(Number),
 				title: createTopicTitleForVersion(version),
@@ -60,12 +63,12 @@ describe('topic', () => {
 					} as Partial<Member>)
 				} as Partial<Post>),
 				hidden: true
-			} as Partial<Topic & {hidden: boolean}>);
+			} as Partial<Topic & { hidden: boolean }>);
 
 			const topic = await topicPromise;
 			await request(
 				`https://www.ascensiongamedev.com/api/forums/topics/${topic.id}`,
-				{method: 'DELETE'}
+				{ method: 'DELETE' }
 			);
 		} finally {
 			// Do nothing
@@ -78,7 +81,8 @@ describe('topic', () => {
 				testRealVersion,
 				99990 + Math.floor(Math.random() * 10),
 				'faketesthash',
-				testRealTopicId
+				['linux-x64'],
+				testRealTopicId,
 			);
 			await expect(postPromise).resolves.toMatchObject({
 				// eslint-disable-next-line camelcase
@@ -88,7 +92,7 @@ describe('topic', () => {
 			const post = await postPromise;
 			await request(
 				`https://www.ascensiongamedev.com/api/forums/posts/${post.id}`,
-				{method: 'DELETE'}
+				{ method: 'DELETE' }
 			);
 		} finally {
 			// Do nothing
@@ -103,13 +107,14 @@ describe('topic', () => {
 			)}.${Math.floor(Math.random() * 10)}`;
 			const buildNumber = 999 + Math.floor(Math.random() * 10000);
 			const hash = `${Math.floor(Math.random() * 10000)}fakehash`;
-			topic = await createTopicForVersion(version, buildNumber, hash);
+			topic = await createTopicForVersion(version, buildNumber, hash, ['linux-x64']);
 
 			const postPromise = postNewBuildForVersion(
 				version,
 				99990 + Math.floor(Math.random() * 10),
 				'faketesthash',
-				topic.id
+				['linux-x64'],
+				topic.id,
 			);
 			await expect(postPromise).resolves.toMatchObject({
 				// eslint-disable-next-line camelcase
@@ -119,14 +124,14 @@ describe('topic', () => {
 			const post = await postPromise;
 			await request(
 				`https://www.ascensiongamedev.com/api/forums/posts/${post.id}`,
-				{method: 'DELETE'}
+				{ method: 'DELETE' }
 			);
 		} finally {
 			try {
 				if (topic !== undefined) {
 					await request(
 						`https://www.ascensiongamedev.com/api/forums/topics/${topic.id}`,
-						{method: 'DELETE'}
+						{ method: 'DELETE' }
 					);
 				}
 			} finally {
@@ -142,7 +147,7 @@ describe('topic', () => {
 			)}.${Math.floor(Math.random() * 10)}`;
 			const buildNumber = 999 + Math.floor(Math.random() * 10000);
 			const hash = `${Math.floor(Math.random() * 10000)}fakehash`;
-			const topic = await createTopicForVersion(version, buildNumber, hash);
+			const topic = await createTopicForVersion(version, buildNumber, hash, ['linux-x64']);
 
 			const updatedBuild = 99990 + Math.floor(Math.random() * 10);
 			const updatedHash = 'fakeupdatedtesthash';
@@ -153,7 +158,8 @@ describe('topic', () => {
 				version,
 				updatedBuild,
 				updatedHash,
-				topic.id
+				topic.id,
+				['linux-x64'],
 			);
 			await expect(topicUpdatePromise).resolves.toMatchObject({
 				post: {
@@ -175,7 +181,7 @@ describe('topic', () => {
 						)
 					} as Partial<Post>),
 					hidden: true
-				} as Partial<Topic & {hidden: boolean}>
+				} as Partial<Topic & { hidden: boolean }>
 			});
 			// await expect(topicUpdatePromise).resolves.not.toMatchObject({
 			// 	post: {

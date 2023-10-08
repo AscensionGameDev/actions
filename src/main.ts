@@ -15,10 +15,14 @@ async function run(): Promise<void> {
 		const version = getInput('version');
 		const buildRaw = getInput('build');
 		const hash = getInput('hash');
+		const runtimeIdentifiersRaw = getInput('runtime-identifiers');
 		const topicIdRaw = getInput('topic-id');
 
 		const build = Number.parseInt(buildRaw);
 		const topicId = Number.parseInt(topicIdRaw);
+
+		const runtimeIdentifiers = runtimeIdentifiersRaw?.split(',') ?? [''];
+		debug(`Posting builds for the following runtime identifiers: ${runtimeIdentifiers.join(',') || 'None specified'}`);
 
 		setApiKey(apiKey);
 
@@ -35,7 +39,8 @@ async function run(): Promise<void> {
 				version,
 				build,
 				hash,
-				topic.id
+				topic.id,
+				runtimeIdentifiers
 			);
 			debug(
 				`Updated ${topic.id}/${updatedTopic.id} and created new post ${post.id
@@ -46,9 +51,15 @@ async function run(): Promise<void> {
 				)}`
 			);
 		} else {
-			topic = await createTopicForVersion(version, build, hash, {
-				hidden: Visibility.Visible
-			});
+			topic = await createTopicForVersion(
+				version,
+				build,
+				hash,
+				runtimeIdentifiers,
+				{
+					hidden: Visibility.Visible
+				}
+			);
 			debug(
 				`Created new post ${topic.id} for v${combineVersionBuildHash(
 					version,
