@@ -137,6 +137,7 @@ function packageBundle(version, ...bundleDescriptors) {
                 const archiveName = `${archiveRootName}-${name}-${version}.zip`;
                 const archivePath = (0, path_1.join)(repositoryRoot, 'dist', archiveName);
                 const fileHandle = yield (0, promises_1.open)(archivePath, 'w');
+                (0, core_1.info)(`Writing '${archiveName}' to ${archivePath}`);
                 const writeStream = fileHandle.createWriteStream();
                 const archive = (0, archiver_1.default)('zip');
                 writeStream.on('close', () => {

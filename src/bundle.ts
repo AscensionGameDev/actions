@@ -173,6 +173,7 @@ export async function packageBundle(
 			const archiveName = `${archiveRootName}-${name}-${version}.zip`;
 			const archivePath = join(repositoryRoot, 'dist', archiveName);
 			const fileHandle = await open(archivePath, 'w');
+			info(`Writing '${archiveName}' to ${archivePath}`);
 			const writeStream = fileHandle.createWriteStream();
 			const archive = archiver('zip');
 
