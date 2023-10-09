@@ -60,7 +60,10 @@ export async function packageBundle(
 	...bundleDescriptors: BundleDescriptor[]
 ): Promise<Result<string[]>> {
 	const repositoryRoot = process.cwd();
-	info(`Bundling packages from ${repositoryRoot}`);
+	info(`Bundling ${bundleDescriptors.length} packages from ${repositoryRoot}`);
+	if (bundleDescriptors.length < 1) {
+		warning('Is the `bundle` input parameter correct?');
+	}
 
 	const archivePaths: string[] = [];
 	for (const { directories, includes, name, platform } of bundleDescriptors) {

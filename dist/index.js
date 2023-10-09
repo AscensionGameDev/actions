@@ -58,7 +58,10 @@ function isDefined(value) {
 function packageBundle(version, ...bundleDescriptors) {
     return __awaiter(this, void 0, void 0, function* () {
         const repositoryRoot = process.cwd();
-        (0, core_1.info)(`Bundling packages from ${repositoryRoot}`);
+        (0, core_1.info)(`Bundling ${bundleDescriptors.length} packages from ${repositoryRoot}`);
+        if (bundleDescriptors.length < 1) {
+            (0, core_1.warning)('Is the `bundle` input parameter correct?');
+        }
         const archivePaths = [];
         for (const { directories, includes, name, platform } of bundleDescriptors) {
             const bundleOutputDirectory = (0, path_1.join)(...['dist', platform, name].filter(isDefined));
