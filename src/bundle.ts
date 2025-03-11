@@ -5,8 +5,8 @@ import { mkdirp } from 'mkdirp';
 import { basename, dirname, join, normalize, relative, sep } from 'path';
 import archiver from 'archiver';
 
-export type Result<T = void> =
-	| (T extends void ? { ok: true } : { ok: true; value: T })
+export type Result<T = never> = 
+	| (T extends never ? { ok: true } : { ok: true; value: T })
 	| { ok: false; err: Error };
 
 export type FileMapping = {
