@@ -26,23 +26,29 @@ export type BundleDescriptor = {
 export async function makeDirectory(
 	parent: string,
 	segments: DirectorySegments
-): Promise<Result> {
+): Promise<Result<string>> {
 	try {
 		if (typeof segments === 'string') {
 			const resolvedPath = join(parent, segments);
 			info(`Creating directory: ${resolvedPath}`);
 			await mkdirp(resolvedPath);
-			return { ok: true };
+			return {
+				ok: true,
+				value: resolvedPath,
+			};
 		}
 
 		if (!Array.isArray(segments)) {
 			throw new Error(`Invalid segment: ${segments}`);
 		}
 
-		const resolvedPath = join(parent, ...segments);
+		const resolvedPath = join(parent, ...segments.map(segment => typeof segment === 'string' ? segment : String(segment)));
 		info(`Creating directory: ${resolvedPath}`);
 		await mkdirp(resolvedPath);
-		return { ok: true };
+		return {
+			ok: true,
+			value: resolvedPath,
+		};
 	} catch (err) {
 		return {
 			ok: false,
