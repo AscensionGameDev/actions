@@ -200,7 +200,17 @@ export async function packageBundle(
 
 			archive.pipe(writeStream);
 			const directoryToArchive = join(repositoryRoot, bundleOutputDirectory);
-			info(`Adding directory to archive: ${directoryToArchive}`);
+
+			const archivedFilesGlobPath = join(directoryToArchive, '**');
+			const archivedFiles = await glob(archivedFilesGlobPath, {
+				absolute: true,
+				cwd: repositoryRoot,
+				nodir: true,
+				realpath: true
+			});
+
+			const archivedFileLines = archivedFiles.map(archivedFileName => `\t${archivedFileName}`);
+			info(`Adding directory to archive: ${directoryToArchive}\n${archivedFileLines.join('\n')}`);
 			archive.directory(directoryToArchive, false);
 			await archive.finalize();
 
