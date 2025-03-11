@@ -3,13 +3,12 @@
 	"version": "0.7.2-beta",
 	"private": true,
 	"description": "Action to bundle releases for the Intersect game engine",
-	"main": "lib/main.js",
 	"scripts": {
 		"build": "tsc",
 		"format": "prettier --write '**/*.ts'",
 		"format-check": "prettier --check '**/*.ts'",
 		"lint": "eslint src/**/*.ts",
-		"package": "ncc build --source-map --license licenses.txt",
+		"package": "ncc build --source-map --license licenses.txt src/main.ts",
 		"test": "jest",
 		"all": "pnpm run build && pnpm run format && pnpm run lint && pnpm run package && pnpm test"
 	},
