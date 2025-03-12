@@ -2,9 +2,8 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 
-import type { BundleDescriptor, DirectorySegments, Result } from './bundle';
-import { makeDirectory, packageBundle } from './bundle';
-
+import type { Result } from './bundle';
+import { makeDirectory } from './bundle';
 
 describe('makeDirectory()', () => {
     let testDirectoryName: string;
@@ -48,8 +47,4 @@ describe('makeDirectory()', () => {
             err: new Error(`Invalid segment: ${1}`),
         });
     });
-});
-
-describe('packageBundle()', () => {
-
 });

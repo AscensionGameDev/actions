@@ -55548,7 +55548,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.context = exports.DefaultFileSystem = void 0;
 exports.makeDirectory = makeDirectory;
+exports.isDefined = isDefined;
+exports.findAll = findAll;
+exports.resolveGlobPath = resolveGlobPath;
 exports.packageBundle = packageBundle;
 const core_1 = __nccwpck_require__(9999);
 const promises_1 = __nccwpck_require__(1943);
@@ -55556,6 +55560,47 @@ const glob_1 = __nccwpck_require__(8172);
 const mkdirp_1 = __nccwpck_require__(2225);
 const path_1 = __nccwpck_require__(6928);
 const archiver_1 = __importDefault(__nccwpck_require__(2888));
+exports.DefaultFileSystem = {
+    isDirectory(pathTo) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const stats = yield (0, promises_1.stat)(pathTo);
+                return (_a = stats === null || stats === void 0 ? void 0 : stats.isDirectory()) !== null && _a !== void 0 ? _a : false;
+            }
+            catch (err) {
+                if (!err ||
+                    typeof err !== 'object' ||
+                    !('code' in err) ||
+                    err.code !== 'ENOENT') {
+                    (0, core_1.warning)(err);
+                }
+                return false;
+            }
+        });
+    },
+    isFile(pathTo) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const stats = yield (0, promises_1.stat)(pathTo);
+                return (_a = stats === null || stats === void 0 ? void 0 : stats.isFile()) !== null && _a !== void 0 ? _a : false;
+            }
+            catch (err) {
+                if (!err ||
+                    typeof err !== 'object' ||
+                    !('code' in err) ||
+                    err.code !== 'ENOENT') {
+                    (0, core_1.warning)(err);
+                }
+                return false;
+            }
+        });
+    }
+};
+exports.context = {
+    fileSystem: exports.DefaultFileSystem,
+};
 function makeDirectory(parent, segments) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -55589,6 +55634,71 @@ function makeDirectory(parent, segments) {
 }
 function isDefined(value) {
     return value !== undefined;
+}
+function findAll(searchFor, searchIn) {
+    const positions = [];
+    let index = 0;
+    while ((index = searchIn.indexOf(searchFor, index)) > -1) {
+        positions.push(index);
+    }
+    return positions;
+}
+function resolveGlobPath(globbedPaths, repositoryRoot, resolvedTarget, normalizedIncludeSource, globbedFilePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const globbedFileName = (0, path_1.basename)(globbedFilePath);
+        (0, core_1.info)(`Resolved ${globbedFileName} (${globbedFilePath})`);
+        let targetFilePath = (0, path_1.join)(resolvedTarget, globbedFileName);
+        const firstGlobReplacementPosition = normalizedIncludeSource.indexOf('**');
+        if (firstGlobReplacementPosition >= 0) {
+            let resolvedIncludeSource = (0, path_1.join)(repositoryRoot, normalizedIncludeSource);
+            if (normalizedIncludeSource.endsWith('**')) {
+                resolvedIncludeSource = (0, path_1.dirname)(resolvedIncludeSource);
+            }
+            if (resolvedIncludeSource.length > firstGlobReplacementPosition) {
+                const patternSource = resolvedIncludeSource.replace(/\*\*/g, (_, index) => `(?<glob${index}>.+)`);
+                const resolvedIncludeSourcePattern = new RegExp(patternSource);
+                const match = resolvedIncludeSourcePattern.exec(globbedFilePath);
+                if (match) {
+                    const { groups } = match;
+                    let offset = 0;
+                    for (const globPositionKey in groups) {
+                        const globReplacementIndex = Number.parseInt(globPositionKey.replace('glob', ''));
+                        const globReplacement = groups[globPositionKey];
+                        // console.debug({
+                        // 	resolvedIncludeSource,
+                        // 	globReplacementIndex,
+                        // 	globReplacement,
+                        // 	offset,
+                        // 	resolvedIncludeSourc2: resolvedIncludeSource.slice(0, globReplacementIndex + offset) + globReplacement + resolvedIncludeSource.slice(globReplacementIndex + offset + 2)
+                        // });
+                        resolvedIncludeSource = resolvedIncludeSource.slice(0, globReplacementIndex + offset) + globReplacement + resolvedIncludeSource.slice(globReplacementIndex + offset + 2);
+                        offset += globReplacement.length - 2;
+                    }
+                }
+                else {
+                    (0, core_1.warning)(`No glob replacement sections found in '${globbedFilePath}' using glob pattern '${resolvedIncludeSource}'`);
+                }
+                // console.log([globbedFilePath, resolvedIncludeSource], match);
+            }
+            const relativeGlobbedFilePath = (0, path_1.relative)(resolvedIncludeSource, globbedFilePath);
+            (0, core_1.info)(`Relative globbed file path: ${relativeGlobbedFilePath}`);
+            const resolvedTargetGlobbedFilePath = (0, path_1.join)(resolvedTarget, relativeGlobbedFilePath);
+            (0, core_1.info)(`Resolved target globbed file path: ${resolvedTargetGlobbedFilePath}`);
+            if (relativeGlobbedFilePath.includes(path_1.sep)) {
+                const resolvedTargetGlobbedFileDirName = (0, path_1.dirname)(resolvedTargetGlobbedFilePath);
+                (0, core_1.info)(`mkdirp: ${resolvedTargetGlobbedFileDirName}`);
+                yield (0, mkdirp_1.mkdirp)(resolvedTargetGlobbedFileDirName);
+            }
+            (0, core_1.info)(`Re-resolved ${relativeGlobbedFilePath} to ${resolvedTargetGlobbedFilePath}`);
+            targetFilePath = resolvedTargetGlobbedFilePath;
+        }
+        else if (globbedPaths.length === 1) {
+            if (!(yield exports.context.fileSystem.isDirectory(resolvedTarget))) {
+                targetFilePath = resolvedTarget;
+            }
+        }
+        return targetFilePath;
+    });
 }
 function packageBundle(version, ...bundleDescriptors) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -55627,40 +55737,7 @@ function packageBundle(version, ...bundleDescriptors) {
                         }
                         (0, core_1.info)(`Found paths for glob '${include.source}': ${JSON.stringify(globbedPaths, null, 2)}`);
                         for (const globbedFilePath of globbedPaths) {
-                            const globbedFileName = (0, path_1.basename)(globbedFilePath);
-                            (0, core_1.info)(`Resolved ${globbedFileName} (${globbedFilePath})`);
-                            let targetFilePath = (0, path_1.join)(resolvedTarget, globbedFileName);
-                            if (normalizedIncludeSource.endsWith('**')) {
-                                const absoluteSourceDirectory = (0, path_1.dirname)((0, path_1.join)(repositoryRoot, normalizedIncludeSource));
-                                const relativeGlobbedFilePath = (0, path_1.relative)(absoluteSourceDirectory, globbedFilePath);
-                                (0, core_1.info)(`Relative globbed file path: ${relativeGlobbedFilePath}`);
-                                const resolvedTargetGlobbedFilePath = (0, path_1.join)(resolvedTarget, relativeGlobbedFilePath);
-                                (0, core_1.info)(`Resolved target globbed file path: ${resolvedTargetGlobbedFilePath}`);
-                                if (relativeGlobbedFilePath.includes(path_1.sep)) {
-                                    const resolvedTargetGlobbedFileDirName = (0, path_1.dirname)(resolvedTargetGlobbedFilePath);
-                                    (0, core_1.info)(`mkdirp: ${resolvedTargetGlobbedFileDirName}`);
-                                    yield (0, mkdirp_1.mkdirp)(resolvedTargetGlobbedFileDirName);
-                                }
-                                (0, core_1.info)(`Re-resolved ${relativeGlobbedFilePath} to ${resolvedTargetGlobbedFilePath}`);
-                                targetFilePath = resolvedTargetGlobbedFilePath;
-                            }
-                            else if (globbedPaths.length === 1) {
-                                try {
-                                    const stats = yield (0, promises_1.stat)(resolvedTarget);
-                                    if (stats === null || !stats.isDirectory()) {
-                                        targetFilePath = resolvedTarget;
-                                    }
-                                }
-                                catch (err) {
-                                    if (!err ||
-                                        typeof err !== 'object' ||
-                                        !('code' in err) ||
-                                        err.code !== 'ENOENT') {
-                                        (0, core_1.warning)(err);
-                                    }
-                                    targetFilePath = resolvedTarget;
-                                }
-                            }
+                            const targetFilePath = yield resolveGlobPath(globbedPaths, repositoryRoot, resolvedTarget, normalizedIncludeSource, globbedFilePath);
                             (0, core_1.info)(`Copying ${include.source} to ${targetFilePath}`);
                             yield (0, promises_1.copyFile)(globbedFilePath, targetFilePath);
                         }
