@@ -80,22 +80,22 @@ describe('resolveGlobPath()', () => {
     });
 
     it.each([
-        // ['Intersect.Client/LICENSE.md', 'Client and Editor/LICENSE.client.md', false, 'Client and Editor/LICENSE.client.md', undefined],
-        // ['Intersect.Client/bin/Release/**/linux-x64/publish/Intersect Client', 'Client and Editor', true, 'Client and Editor/Intersect Client', undefined],
-        // ['Intersect.Server/LICENSE.md', 'Server/LICENSE.md', false, 'Server/LICENSE.md', undefined],
-        // ['Intersect.Server/bin/Release/**/linux-x64/publish/Intersect Server', 'Server', true, 'Server/Intersect Server', undefined],
+        ['Intersect.Client/LICENSE.md', 'Client and Editor/LICENSE.client.md', false, 'Client and Editor/LICENSE.client.md', undefined],
+        ['Intersect.Client/bin/Release/**/linux-x64/publish/Intersect Client', 'Client and Editor', true, 'Client and Editor/Intersect Client', undefined],
+        ['Intersect.Server/LICENSE.md', 'Server/LICENSE.md', false, 'Server/LICENSE.md', undefined],
+        ['Intersect.Server/bin/Release/**/linux-x64/publish/Intersect Server', 'Server', true, 'Server/Intersect Server', undefined],
         ['Intersect.Server/bin/Release/**/**/publish/wwwroot/**', 'Server/wwwroot', true, 'Server/wwwroot', [
             'favicon.ico',
             'AscensionGameDev.Intersect.Server.styles.css',
             'js/tabset.js',
         ]],
-        // ['assets_full/**', 'Client and Editor', true, 'Client and Editor', [
-        //     'Upgrading.md',
-        //     'resources/credits.json',
-        //     'resources/tilesets/Autotiles_Interior & Terrain.png',
-        //     'resources/gui/layouts/shared/SettingsWindow.json',
-        // ]],
-        // ['Documentation/Intersect Documentation.url', 'Intersect Documentation.url', false, 'Intersect Documentation.url', undefined],
+        ['assets_full/**', 'Client and Editor', true, 'Client and Editor', [
+            'Upgrading.md',
+            'resources/credits.json',
+            'resources/tilesets/Autotiles_Interior & Terrain.png',
+            'resources/gui/layouts/shared/SettingsWindow.json',
+        ]],
+        ['Documentation/Intersect Documentation.url', 'Intersect Documentation.url', false, 'Intersect Documentation.url', undefined],
     ])('resolves `%s` to `%s`', async (source, target, targetIsDirectory, expectedPartial, globFiles?: string[]) => {
         const normalizedIncludeSource = normalize(source);
         const resolvedTarget = join(
@@ -106,6 +106,10 @@ describe('resolveGlobPath()', () => {
         isDirectory[resolvedTarget] = targetIsDirectory;
 
         const baseGlobPath = join(repositoryRoot, source.replace('Release/**', 'Release/net8.0').replace('Release/net8.0/**', `Release/net8.0/${platform}`));
+        const sourceIsDirectory = baseGlobPath.endsWith('/**');
+        const resolvedSource = baseGlobPath.replace(/\/(?:\*\*)?$/, '');
+        isDirectory[resolvedSource] = sourceIsDirectory;
+
         const cases = globFiles?.map(globFile => [
             baseGlobPath.replace(/\*\*$/, globFile),
             join(repositoryRoot, bundleOutputDirectory, expectedPartial, globFile),

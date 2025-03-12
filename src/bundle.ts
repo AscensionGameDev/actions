@@ -157,11 +157,17 @@ export async function resolveGlobPath(
 			// console.log([globbedFilePath, resolvedIncludeSource], match);
 		}
 
+		if (await context.fileSystem.isFile(resolvedIncludeSource)) {
+			resolvedIncludeSource = dirname(resolvedIncludeSource);
+		}
+
+		info(`Globbed file path: ${globbedFilePath}`);
+		info(`Resolved include source: ${resolvedIncludeSource}`);
 		const relativeGlobbedFilePath = relative(
 			resolvedIncludeSource,
 			globbedFilePath
 		);
-		info(`Relative globbed file path: ${relativeGlobbedFilePath}`);
+		info(`Relative globbed file path: ${relativeGlobbedFilePath ? '(empty, is exact path match)' : relativeGlobbedFilePath}`);
 		const resolvedTargetGlobbedFilePath = join(
 			resolvedTarget,
 			relativeGlobbedFilePath

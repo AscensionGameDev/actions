@@ -55680,8 +55680,13 @@ function resolveGlobPath(globbedPaths, repositoryRoot, resolvedTarget, normalize
                 }
                 // console.log([globbedFilePath, resolvedIncludeSource], match);
             }
+            if (yield exports.context.fileSystem.isFile(resolvedIncludeSource)) {
+                resolvedIncludeSource = (0, path_1.dirname)(resolvedIncludeSource);
+            }
+            (0, core_1.info)(`Globbed file path: ${globbedFilePath}`);
+            (0, core_1.info)(`Resolved include source: ${resolvedIncludeSource}`);
             const relativeGlobbedFilePath = (0, path_1.relative)(resolvedIncludeSource, globbedFilePath);
-            (0, core_1.info)(`Relative globbed file path: ${relativeGlobbedFilePath}`);
+            (0, core_1.info)(`Relative globbed file path: ${relativeGlobbedFilePath ? '(empty, is exact path match)' : relativeGlobbedFilePath}`);
             const resolvedTargetGlobbedFilePath = (0, path_1.join)(resolvedTarget, relativeGlobbedFilePath);
             (0, core_1.info)(`Resolved target globbed file path: ${resolvedTargetGlobbedFilePath}`);
             if (relativeGlobbedFilePath.includes(path_1.sep)) {
